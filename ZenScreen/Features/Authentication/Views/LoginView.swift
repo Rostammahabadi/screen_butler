@@ -24,7 +24,7 @@ struct LoginView: View {
                             .padding(.vertical, 12)
                             .shadow(color: .blue.opacity(0.2), radius: 10, x: 0, y: 4)
                         
-                        Text("Welcome to ZenScreen")
+                        Text("Welcome to ScreenButler")
                             .font(.largeTitle)
                             .fontWeight(.bold)
                         

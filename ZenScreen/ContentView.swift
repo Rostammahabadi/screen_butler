@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  ZenScreen
+//  ScreenButler
 //
 //  Created by Rostam on 2/28/25.
 //
@@ -93,106 +93,54 @@ struct ContentView: View {
     @State private var isShowingSelectionReviewView = false
     @State private var renameSuggestions: [FileItem: String] = [:]
     @State private var isSmartSelecting = false
-    @StateObject private var fileService = FileSystemService()  // Create a shared FileSystemService
+    @EnvironmentObject var fileService: FileSystemService  // Use environment object instead of creating a new instance
+    
+    // Whether the view is displayed in a window (true) or directly in menu (false)
+    var isInWindow: Bool = true
     
     var body: some View {
         HStack(spacing: 0) {
             // Left side - File Browser
-            VStack(spacing: 0) {
-                // Title header
-                HStack {
-                    Text("ZenScreen Desktop Browser")
-                        .font(.headline)
-                        .padding()
-                    
-                    Spacer()
-                    
-                    // Smart Select button - automatically identify ambiguous filenames
-                    if !isMultiSelectMode {
-                        Button(action: smartSelectAmbiguousFiles) {
-                            HStack {
-                                if isSmartSelecting {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle())
-                                        .scaleEffect(0.8)
-                                        .frame(width: 16, height: 16)
-                                } else {
-                                    Image(systemName: "wand.and.stars")
-                                }
-                                Text(isSmartSelecting ? "Scanning..." : "Smart Select")
-                                    .font(.subheadline)
+            VStack {
+                // Multi-selection and Smart Select controls
+                if isInWindow {
+                    HStack {
+                        Button(action: {
+                            isMultiSelectMode.toggle()
+                            if !isMultiSelectMode {
+                                selectedItems = []
                             }
+                        }) {
+                            Label(
+                                isMultiSelectMode ? "Exit Selection" : "Select Files",
+                                systemImage: isMultiSelectMode ? "checkmark.circle" : "circle.grid.3x3"
+                            )
                         }
-                        .buttonStyle(.bordered)
-                        .foregroundColor(.blue)
-                        .padding(.trailing, 8)
-                        .disabled(isSmartSelecting)
-                    }
-                    
-                    // Multi-select toggle button
-                    Button(action: {
-                        isMultiSelectMode.toggle()
-                        if !isMultiSelectMode {
-                            selectedItems.removeAll()
-                        }
-                    }) {
-                        HStack {
-                            Image(systemName: isMultiSelectMode ? "xmark.circle" : "checkmark.circle")
-                            Text(isMultiSelectMode ? "Exit Selection" : "Select Files")
-                                .font(.subheadline)
-                        }
-                    }
-                    .buttonStyle(.bordered)
-                    .foregroundColor(isMultiSelectMode ? .red : .blue)
-                    
-                    // Batch rename button (only visible when items are selected)
-                    if !selectedItems.isEmpty {
-                        Button(action: startBatchRename) {
-                            HStack {
-                                Image(systemName: "pencil")
-                                Text("Rename \(selectedItems.count) Files")
-                                    .font(.subheadline)
-                            }
-                        }
-                        .buttonStyle(.bordered)
-                        .foregroundColor(.green)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .background(Color.blue.opacity(0.1))
-                
-                // Multi-select info banner
-                if isMultiSelectMode {
-                    VStack(spacing: 8) {
-                        HStack {
-                            Image(systemName: "info.circle")
-                                .foregroundColor(.blue)
-                            Text("Only images, videos, PDFs, text and spreadsheet files can be selected for renaming. Folders remain navigable.")
-                                .font(.callout)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.leading)
-                        }
+                        .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.capsule)
                         .padding(.horizontal)
-                        .padding(.vertical, 6)
-                        .background(Color.blue.opacity(0.1))
-                        .cornerRadius(8)
                         
-                        if !selectedItems.isEmpty {
-                            HStack {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.green)
-                                Text("\(selectedItems.count) \(selectedItems.count == 1 ? "file" : "files") selected")
-                                    .font(.callout)
-                                    .foregroundColor(.secondary)
+                        if isMultiSelectMode {
+                            Button(action: startBatchRename) {
+                                Label("Rename with AI", systemImage: "wand.and.stars")
                             }
+                            .disabled(selectedItems.isEmpty)
+                            .buttonStyle(.borderedProminent)
+                            .buttonBorderShape(.capsule)
+                            
+                            Button(action: smartSelectAmbiguousFiles) {
+                                Label(isSmartSelecting ? "Selecting..." : "Smart Select", systemImage: "sparkles")
+                            }
+                            .disabled(isSmartSelecting)
+                            .buttonStyle(.borderedProminent)
+                            .buttonBorderShape(.capsule)
                             .padding(.horizontal)
                         }
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 6)
+                    .padding(.vertical, 8)
                 }
                 
-                // File browser - pass the shared fileService
+                // File browser with selection support
                 FileBrowserWithSelectionView(
                     selectedItem: $selectedItem,
                     selectedItems: $selectedItems,
@@ -200,10 +148,10 @@ struct ContentView: View {
                     isMultiSelectMode: $isMultiSelectMode,
                     fileService: fileService
                 )
+                .id(refreshTrigger) // Force refresh when needed
             }
-            .frame(minWidth: 300)
             
-            // Right side - Preview Pane (only in single-select mode)
+            // Right side - File Preview (only in non-multi-select mode)
             if !isMultiSelectMode && selectedItem != nil {
                 Divider()
                 
@@ -249,6 +197,40 @@ struct ContentView: View {
                     isShowingSelectionReviewView = false
                 }
             )
+        }
+        .onAppear {
+            // Set up notification observer for directory navigation from menu bar
+            #if os(macOS)
+            NotificationCenter.default.addObserver(
+                forName: Notification.Name("OpenDirectoryNotification"),
+                object: nil,
+                queue: .main
+            ) { notification in
+                if let userInfo = notification.userInfo, let url = userInfo["url"] as? URL {
+                    // Navigate to the specified directory
+                    fileService.navigate(to: url)
+                    
+                    // Reset any selections
+                    selectedItem = nil
+                    selectedItems = []
+                    isMultiSelectMode = false
+                }
+            }
+            
+            // Setup notification for triggering smart select
+            NotificationCenter.default.addObserver(
+                forName: Notification.Name("TriggerSmartSelectNotification"),
+                object: nil,
+                queue: .main
+            ) { _ in
+                // Enter multi-select mode first
+                isMultiSelectMode = true
+                selectedItems = []
+                
+                // Then trigger smart select
+                smartSelectAmbiguousFiles()
+            }
+            #endif
         }
     }
     
@@ -579,30 +561,144 @@ struct FileBrowserWithSelectionView: View {
 // Navigation header as a separate component
 struct NavigationHeaderView: View {
     @ObservedObject var fileService: FileSystemService
+    @State private var showingDirectoryMenu = false
     
     var body: some View {
         HStack {
-            Button(action: fileService.navigateUp) {
-                Image(systemName: "arrow.up")
-                    .padding(8)
+            // Navigation controls
+            HStack(spacing: 2) {
+                // Up button with dropdown for navigation options
+                Menu {
+                    Button(action: fileService.navigateUp) {
+                        Label("Go to Parent Directory", systemImage: "arrow.up")
+                    }
+                    
+                    Divider()
+                    
+                    // Common locations
+                    if let desktop = fileService.desktopURL {
+                        Button(action: { fileService.navigate(to: desktop) }) {
+                            Label("Desktop", systemImage: "desktopcomputer")
+                        }
+                    }
+                    
+                    Button(action: { fileService.navigate(to: fileService.documentsURL) }) {
+                        Label("Documents", systemImage: "folder.fill.badge.person.crop")
+                    }
+                    
+                    if let home = fileService.homeURL {
+                        Button(action: { fileService.navigate(to: home) }) {
+                            Label("Home Directory", systemImage: "house")
+                        }
+                    }
+                    
+                    Divider()
+                    
+                    // Folder picker option
+                    Button(action: showFolderPicker) {
+                        Label("Choose Folder...", systemImage: "folder.badge.plus")
+                    }
+                } label: {
+                    Image(systemName: "arrow.up")
+                        .frame(width: 20, height: 20)
+                        .padding(5)
+                }
+                .menuStyle(BorderlessButtonMenuStyle())
+                .menuIndicator(.hidden)
+                .fixedSize()
+                
+                // Current path display with navigation
+                NavigationPathView(path: fileService.currentDirectory.path, fileService: fileService)
             }
-            .disabled(fileService.currentDirectory.pathComponents.count <= 1)
-            
-            Text(fileService.currentDirectory.lastPathComponent)
-                .font(.headline)
-                .lineLimit(1)
-                .padding(.horizontal)
             
             Spacer()
             
+            // Reload button
             Button(action: fileService.loadContents) {
-                Image(systemName: "arrow.clockwise")
-                    .padding(8)
+                Label("Reload", systemImage: "arrow.clockwise")
+                    .labelStyle(.iconOnly)
+                    .padding(5)
             }
         }
-        .padding(.horizontal)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
         .background(Color.secondary.opacity(0.1))
+    }
+    
+    private func showFolderPicker() {
+        #if os(macOS)
+        // For folders requiring user permission, guide the user
+        let openPanel = NSOpenPanel()
+        openPanel.message = "Select a folder to navigate to"
+        openPanel.prompt = "Open"
+        openPanel.canChooseDirectories = true
+        openPanel.canChooseFiles = false
+        openPanel.allowsMultipleSelection = false
+        
+        if openPanel.runModal() == .OK, let selectedURL = openPanel.url {
+            fileService.navigate(to: selectedURL)
+        }
+        #endif
+    }
+}
+
+// A component that displays the path with interactive segments
+struct NavigationPathView: View {
+    let path: String
+    @ObservedObject var fileService: FileSystemService
+    
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 2) {
+                ForEach(pathComponents.indices, id: \.self) { index in
+                    pathComponentView(for: index)
+                    
+                    if index < pathComponents.count - 1 {
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+        .frame(height: 30)
+    }
+    
+    private var pathComponents: [String] {
+        var components = path.split(separator: "/").map(String.init)
+        // Add the root component
+        components.insert("/", at: 0)
+        return components
+    }
+    
+    private func pathComponentView(for index: Int) -> some View {
+        let component = pathComponents[index]
+        let isLast = index == pathComponents.count - 1
+        
+        return Button(action: {
+            navigateToPathComponent(at: index)
+        }) {
+            Text(component)
+                .padding(.horizontal, 4)
+                .padding(.vertical, 2)
+                .background(isLast ? Color.blue.opacity(0.2) : Color.clear)
+                .cornerRadius(4)
+                .foregroundColor(isLast ? .primary : .secondary)
+        }
+        .buttonStyle(BorderlessButtonStyle())
+    }
+    
+    private func navigateToPathComponent(at index: Int) {
+        var path = "/"
+        
+        // Skip the first component (which is just "/")
+        if index > 0 {
+            let selectedComponents = pathComponents.dropFirst().prefix(index)
+            path = "/" + selectedComponents.joined(separator: "/")
+        }
+        
+        let url = URL(fileURLWithPath: path)
+        fileService.navigate(to: url)
     }
 }
 
@@ -1022,7 +1118,7 @@ struct FilePreviewView: View {
                         // If this is a permissions issue, explain more clearly to the user
                         let alert = NSAlert()
                         alert.messageText = "Permission Error"
-                        alert.informativeText = "ZenScreen doesn't have permission to rename this file. This can happen with files in protected locations or files you don't own. Consider moving the file to a location you have full access to, like your Documents folder."
+                        alert.informativeText = "ScreenButler doesn't have permission to rename this file. This can happen with files in protected locations or files you don't own. Consider moving the file to a location you have full access to, like your Documents folder."
                         alert.addButton(withTitle: "OK")
                         alert.runModal()
                     }

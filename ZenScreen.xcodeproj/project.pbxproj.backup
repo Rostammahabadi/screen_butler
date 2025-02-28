@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		098F0A2F2D722F0500B84756 /* ScreenButler.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScreenButler.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		098F0A2F2D722F0500B84756 /* ZenScreen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZenScreen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -40,7 +40,7 @@
 		098F0A302D722F0500B84756 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				098F0A2F2D722F0500B84756 /* ScreenButler.app */,
+				098F0A2F2D722F0500B84756 /* ZenScreen.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +48,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		098F0A2E2D722F0500B84756 /* ScreenButler */ = {
+		098F0A2E2D722F0500B84756 /* ZenScreen */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 098F0A3E2D722F0500B84756 /* Build configuration list for PBXNativeTarget "ScreenButler" */;
+			buildConfigurationList = 098F0A3E2D722F0500B84756 /* Build configuration list for PBXNativeTarget "ZenScreen" */;
 			buildPhases = (
 				098F0A2B2D722F0500B84756 /* Sources */,
 				098F0A2C2D722F0500B84756 /* Frameworks */,
@@ -63,11 +63,11 @@
 			fileSystemSynchronizedGroups = (
 				098F0A312D722F0500B84756 /* ZenScreen */,
 			);
-			name = ScreenButler;
+			name = ZenScreen;
 			packageProductDependencies = (
 			);
-			productName = ScreenButler;
-			productReference = 098F0A2F2D722F0500B84756 /* ScreenButler.app */;
+			productName = ZenScreen;
+			productReference = 098F0A2F2D722F0500B84756 /* ZenScreen.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -99,7 +99,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				098F0A2E2D722F0500B84756 /* ScreenButler */,
+				098F0A2E2D722F0500B84756 /* ZenScreen */,
 			);
 		};
 /* End PBXProject section */
@@ -248,7 +248,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = ZenScreen/ScreenButler.entitlements;
+				CODE_SIGN_ENTITLEMENTS = ZenScreen/ZenScreen.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -256,16 +256,15 @@
 				DEVELOPMENT_TEAM = V785FYBXRX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = ZenScreen/Info.plist;
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.rostam.ScreenButler;
-				PRODUCT_NAME = ScreenButler;
+				PRODUCT_BUNDLE_IDENTIFIER = Rostam.ZenScreen;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -276,7 +275,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = ZenScreen/ScreenButler.entitlements;
+				CODE_SIGN_ENTITLEMENTS = ZenScreen/ZenScreen.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -284,16 +283,15 @@
 				DEVELOPMENT_TEAM = V785FYBXRX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = ZenScreen/Info.plist;
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.rostam.ScreenButler;
-				PRODUCT_NAME = ScreenButler;
+				PRODUCT_BUNDLE_IDENTIFIER = Rostam.ZenScreen;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -311,7 +309,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		098F0A3E2D722F0500B84756 /* Build configuration list for PBXNativeTarget "ScreenButler" */ = {
+		098F0A3E2D722F0500B84756 /* Build configuration list for PBXNativeTarget "ZenScreen" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				098F0A3F2D722F0500B84756 /* Debug */,

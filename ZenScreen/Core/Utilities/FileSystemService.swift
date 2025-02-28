@@ -6,6 +6,7 @@ class FileSystemService: ObservableObject {
     @Published var items: [FileItem] = []
     @Published var error: String?
     @Published var directoryAccessGranted = false
+    @Published var recentDirectories: [URL] = []
     
     // Safe directories that should always be accessible
     var documentsURL: URL {
@@ -24,6 +25,9 @@ class FileSystemService: ObservableObject {
         // Start with Documents directory which should always be accessible in sandbox
         self.currentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         
+        // Load recent directories from UserDefaults
+        loadRecentDirectories()
+        
         // Now that all properties are initialized, we can call instance methods
         loadContents()
         
@@ -39,19 +43,26 @@ class FileSystemService: ObservableObject {
         let restored = restoreBookmarkedAccess()
         
         if !restored {
-            // If restoration fails, try to access the Desktop
-            if let desktop = desktopURL {
-                let success = desktop.startAccessingSecurityScopedResource()
-                if success {
-                    self.currentDirectory = desktop
-                    self.directoryAccessGranted = true
-                    desktop.stopAccessingSecurityScopedResource() // Release temporary access
-                    self.loadContents()
+            // If we can't access a bookmarked location, prompt the user to select a starting directory
+            #if os(macOS)
+            DispatchQueue.main.async {
+                let alert = NSAlert()
+                alert.messageText = "Choose Starting Directory"
+                alert.informativeText = "ScreenButler needs access to a directory to work with your files. Would you like to select a starting directory now?"
+                alert.addButton(withTitle: "Choose Directory")
+                alert.addButton(withTitle: "Use Documents")
+                
+                if alert.runModal() == .alertFirstButtonReturn {
+                    // User wants to select a directory
+                    self.showDirectoryPicker(message: "Select a starting directory")
                 } else {
-                    // If we can't access Desktop, just stay with Documents
-                    print("Could not access Desktop, staying with Documents folder")
+                    // Use Documents as fallback
+                    print("Using Documents folder as fallback")
                 }
             }
+            #else
+            // Just use Documents on iOS
+            #endif
         }
     }
     
@@ -133,48 +144,158 @@ class FileSystemService: ObservableObject {
         self.loadContents()
     }
     
-    private func requestAccessToCurrentDirectory() {
+    func navigateUp() {
+        guard currentDirectory.pathComponents.count > 1 else { return }
+        
+        // Get the parent directory
+        let parentDirectory = currentDirectory.deletingLastPathComponent()
+        
+        // Check if we're likely to have permissions before attempting to navigate
+        if isLikelyRestrictedDirectory(parentDirectory) {
+            // Proactively show directory picker rather than waiting for an error
+            showDirectoryPicker(
+                message: "Select a folder to navigate to",
+                initialDirectory: parentDirectory
+            )
+        } else {
+            // Attempt to navigate up
+            do {
+                _ = try FileManager.default.contentsOfDirectory(
+                    at: parentDirectory, 
+                    includingPropertiesForKeys: nil,
+                    options: []
+                )
+                
+                // If successful, update and load contents
+                currentDirectory = parentDirectory
+                loadContents()
+            } catch {
+                // Handle error
+                self.error = "Cannot access parent directory: \(error.localizedDescription)"
+                
+                // Show directory picker as fallback
+                showDirectoryPicker(
+                    message: "Select a folder to navigate to",
+                    initialDirectory: parentDirectory
+                )
+            }
+        }
+    }
+    
+    // Helper to determine if a directory is likely to require special permissions
+    private func isLikelyRestrictedDirectory(_ url: URL) -> Bool {
+        // Check if we're trying to navigate to a high-level system directory
+        let pathComponents = url.pathComponents
+        if pathComponents.count <= 2 { // / or /Users would be restricted
+            return true
+        }
+        
+        // Check system locations that won't be accessible in sandbox
+        let restrictedLocations = [
+            "/System",
+            "/Library",
+            "/usr",
+            "/bin",
+            "/sbin",
+            "/var",
+            "/private",
+            "/Network",
+            "/Volumes",
+            "/Applications"
+        ]
+        
+        for location in restrictedLocations {
+            if url.path.hasPrefix(location) {
+                return true
+            }
+        }
+        
+        // Special handling for Desktop and Downloads outside of bookmark access
+        let userPath = FileManager.default.homeDirectoryForCurrentUser.path
+        let desktopPath = userPath + "/Desktop"
+        let downloadsPath = userPath + "/Downloads"
+        
+        // Consider Desktop/Downloads restricted unless we have a bookmark
+        if url.path.hasPrefix(desktopPath) || url.path.hasPrefix(downloadsPath) {
+            // Check if we might have a bookmark for this
+            if let bookmarkData = UserDefaults.standard.data(forKey: "DirectoryBookmark") {
+                do {
+                    var isStale = false
+                    let bookmarkedURL = try URL(resolvingBookmarkData: bookmarkData,
+                                              options: .withSecurityScope,
+                                              relativeTo: nil,
+                                              bookmarkDataIsStale: &isStale)
+                    
+                    // If this URL is a parent directory of our bookmarked URL, it might be accessible
+                    if !isStale && bookmarkedURL.path.hasPrefix(url.path) {
+                        return false
+                    }
+                } catch {
+                    print("Error checking bookmark: \(error)")
+                }
+            }
+            return true
+        }
+        
+        return false
+    }
+    
+    // Unified method for showing directory picker
+    private func showDirectoryPicker(message: String, initialDirectory: URL? = nil) {
         #if os(macOS)
-        // For folders requiring user permission, guide the user
         DispatchQueue.main.async {
             let openPanel = NSOpenPanel()
-            openPanel.message = "Select the folder to grant access"
-            openPanel.prompt = "Grant Access"
+            openPanel.message = message
+            openPanel.prompt = "Open"
             openPanel.canChooseDirectories = true
             openPanel.canChooseFiles = false
             openPanel.allowsMultipleSelection = false
-            openPanel.directoryURL = self.currentDirectory
+            
+            if let initialDir = initialDirectory {
+                // Try to set initial directory, but fallback if not accessible
+                if FileManager.default.fileExists(atPath: initialDir.path) {
+                    openPanel.directoryURL = initialDir
+                } else if let desktop = self.desktopURL {
+                    openPanel.directoryURL = desktop
+                }
+            }
             
             if openPanel.runModal() == .OK, let selectedURL = openPanel.url {
-                // User selected a directory - store access
+                // Create a security bookmark for persistent access
                 do {
                     let bookmarkData = try selectedURL.bookmarkData(
                         options: .withSecurityScope,
                         includingResourceValuesForKeys: nil,
                         relativeTo: nil
                     )
-                                                             
-                    // Save this bookmark data for future app launches
+                    
+                    // Store bookmark for future use
                     UserDefaults.standard.set(bookmarkData, forKey: "DirectoryBookmark")
                     
-                    // Use the selectedURL
+                    // Navigate to the selected directory
                     self.currentDirectory = selectedURL
                     self.directoryAccessGranted = true
                     self.loadContents()
+                    
+                    // Add to recent directories
+                    self.addToRecentDirectories(selectedURL)
                 } catch {
-                    self.error = "Failed to create security bookmark: \(error.localizedDescription)"
-                    self.navigateToSafeLocation()
+                    self.error = "Failed to bookmark directory: \(error.localizedDescription)"
                 }
-            } else {
-                // User canceled - navigate to a safe location
-                self.navigateToSafeLocation()
             }
         }
         #else
         // iOS implementation would be different
-        self.error = "Folder access not supported on this platform"
-        self.navigateToSafeLocation()
+        self.error = "Folder selection not supported on this platform"
         #endif
+    }
+    
+    // Updated request method that uses the general showDirectoryPicker
+    private func requestAccessToCurrentDirectory() {
+        showDirectoryPicker(
+            message: "Select the folder to grant access",
+            initialDirectory: currentDirectory
+        )
     }
     
     func requestDesktopAccess() {
@@ -221,6 +342,7 @@ class FileSystemService: ObservableObject {
         #endif
     }
     
+    // Navigate to a URL and add it to recent directories
     func navigate(to url: URL) {
         // Check if the URL is a directory before navigating
         do {
@@ -228,6 +350,9 @@ class FileSystemService: ObservableObject {
             if let isDirectory = resourceValues.isDirectory, isDirectory {
                 currentDirectory = url
                 loadContents()
+                
+                // Add to recent directories
+                addToRecentDirectories(url)
             } else {
                 self.error = "Cannot navigate to this path as it is not a directory"
             }
@@ -236,35 +361,6 @@ class FileSystemService: ObservableObject {
             // The loadContents method will handle any errors
             currentDirectory = url
             loadContents()
-        }
-    }
-    
-    func navigateUp() {
-        guard currentDirectory.pathComponents.count > 1 else { return }
-        
-        // Store the current directory in case we need to revert
-        let previousDirectory = currentDirectory
-        
-        // Try to navigate up
-        currentDirectory = currentDirectory.deletingLastPathComponent()
-        
-        // Check if we can access the parent directory
-        do {
-            _ = try FileManager.default.contentsOfDirectory(
-                at: currentDirectory, 
-                includingPropertiesForKeys: nil,
-                options: []
-            )
-            
-            // If successful, load contents normally
-            loadContents()
-        } catch {
-            // If we can't access the parent directory, revert and show error
-            currentDirectory = previousDirectory
-            self.error = "Cannot access parent directory: \(error.localizedDescription)"
-            
-            // Try to request access
-            requestAccessToCurrentDirectory()
         }
     }
     
@@ -333,6 +429,64 @@ class FileSystemService: ObservableObject {
         #endif
         
         return false
+    }
+    
+    // Save a directory to recent directories list
+    func addToRecentDirectories(_ url: URL) {
+        // Remove if already exists to avoid duplicates
+        recentDirectories.removeAll { $0.path == url.path }
+        
+        // Add to the front of the list
+        recentDirectories.insert(url, at: 0)
+        
+        // Limit to last 5 directories
+        if recentDirectories.count > 5 {
+            recentDirectories.removeLast()
+        }
+        
+        // Save to UserDefaults
+        saveRecentDirectories()
+    }
+    
+    // Load recent directories from UserDefaults
+    private func loadRecentDirectories() {
+        if let data = UserDefaults.standard.data(forKey: "RecentDirectories") {
+            do {
+                let bookmarks = try NSKeyedUnarchiver.unarchivedObject(ofClass: NSArray.self, from: data) as? [Data]
+                
+                if let bookmarks = bookmarks {
+                    recentDirectories = bookmarks.compactMap { bookmarkData in
+                        do {
+                            var isStale = false
+                            let url = try URL(resolvingBookmarkData: bookmarkData,
+                                              options: .withSecurityScope,
+                                              relativeTo: nil,
+                                              bookmarkDataIsStale: &isStale)
+                            return url
+                        } catch {
+                            print("Failed to resolve bookmark: \(error)")
+                            return nil
+                        }
+                    }
+                }
+            } catch {
+                print("Failed to load recent directories: \(error)")
+            }
+        }
+    }
+    
+    // Save recent directories to UserDefaults
+    private func saveRecentDirectories() {
+        do {
+            let bookmarks = try recentDirectories.map { url -> Data in
+                try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+            }
+            
+            let data = try NSKeyedArchiver.archivedData(withRootObject: bookmarks, requiringSecureCoding: true)
+            UserDefaults.standard.set(data, forKey: "RecentDirectories")
+        } catch {
+            print("Failed to save recent directories: \(error)")
+        }
     }
     
     deinit {

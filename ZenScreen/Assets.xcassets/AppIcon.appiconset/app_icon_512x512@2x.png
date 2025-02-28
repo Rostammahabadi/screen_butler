@@ -1,0 +1,9 @@
+This is a placeholder file. Please replace with an actual 1024x1024 PNG image.
+
+For TestFlight validation, you'll need to create actual PNG files with the correct dimensions and place them in this directory.
+
+For proper app icon creation:
+1. Design a square icon at 1024x1024 pixels
+2. Export versions at 512x512 (app_icon_512x512.png) and 1024x1024 (app_icon_512x512@2x.png)
+3. Place both files in the AppIcon.appiconset directory
+4. Use Xcode's built-in asset catalog to generate all required sizes 
