@@ -309,7 +309,7 @@ struct BatchRenameView: View {
         
         // Filter items to ensure only supported types are processed
         let supportedItems = selectedItems.filter { item in
-            return !item.isDirectory && isSupportedFileType(url: item.path)
+            return !item.isDirectory && FileUtils.isSupportedFileType(url: item.path)
         }
         
         let totalItems = supportedItems.count
@@ -359,23 +359,6 @@ struct BatchRenameView: View {
                 }
             }
         }
-    }
-    
-    // Check if a file is of a supported type for AI analysis and renaming
-    func isSupportedFileType(url: URL) -> Bool {
-        let fileExtension = url.pathExtension.lowercased()
-        
-        // Supported file types
-        let imageExtensions = ["jpg", "jpeg", "png", "heic", "heif", "gif", "webp", "tiff", "raw", "bmp"]
-        let videoExtensions = ["mp4", "mov", "m4v", "avi", "wmv", "webm", "mkv", "3gp"]
-        let documentExtensions = ["pdf", "txt", "rtf", "doc", "docx", "pages"]
-        let spreadsheetExtensions = ["xls", "xlsx", "csv", "numbers"]
-        
-        // Check if the file extension is in any of the supported categories
-        return imageExtensions.contains(fileExtension) ||
-               videoExtensions.contains(fileExtension) ||
-               documentExtensions.contains(fileExtension) ||
-               spreadsheetExtensions.contains(fileExtension)
     }
 }
 
