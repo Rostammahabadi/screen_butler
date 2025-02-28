@@ -90,6 +90,7 @@ struct ContentView: View {
     @State private var refreshTrigger = false
     @State private var isMultiSelectMode = false
     @State private var isShowingBatchRenameView = false
+    @State private var isShowingSelectionReviewView = false
     @State private var renameSuggestions: [FileItem: String] = [:]
     @State private var isSmartSelecting = false
     @StateObject private var fileService = FileSystemService()  // Create a shared FileSystemService
@@ -235,6 +236,20 @@ struct ContentView: View {
                 }
             )
         }
+        .sheet(isPresented: $isShowingSelectionReviewView) {
+            SelectionReviewView(
+                selectedItems: $selectedItems,
+                onContinue: {
+                    // Close this sheet and open the batch rename view
+                    isShowingSelectionReviewView = false
+                    isShowingBatchRenameView = true
+                },
+                onCancel: {
+                    // Just close this sheet
+                    isShowingSelectionReviewView = false
+                }
+            )
+        }
     }
     
     func startBatchRename() {
@@ -337,12 +352,12 @@ struct ContentView: View {
         // Show a quick alert to inform the user
         let alert = NSAlert()
         alert.messageText = "Smart Selection"
-        alert.informativeText = "Found \(count) files with ambiguous names. You can now review and rename them using AI."
+        alert.informativeText = "Found \(count) files with ambiguous names. You can now review and select which ones to process with AI."
         alert.addButton(withTitle: "OK")
         alert.runModal()
         
-        // Automatically show the batch rename view
-        startBatchRename()
+        // Show the selection review view instead of directly starting batch rename
+        isShowingSelectionReviewView = true
         #else
         // On iOS, we use alerts or a toast
         withAnimation {
@@ -350,8 +365,8 @@ struct ContentView: View {
             let generator = UINotificationFeedbackGenerator()
             generator.notificationOccurred(.success)
             
-            // Automatically show the batch rename view
-            startBatchRename()
+            // Show the selection review view
+            isShowingSelectionReviewView = true
         }
         #endif
     }
@@ -1184,6 +1199,187 @@ struct ImagePreview: View {
 }
 #endif
 
+// New struct for Selection Review
+struct SelectionReviewView: View {
+    @Binding var selectedItems: Set<FileItem>
+    let onContinue: () -> Void
+    let onCancel: () -> Void
+    
+    @State private var localSelectedItems: Set<FileItem> = []
+    @State private var searchText: String = ""
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Text("Review Smart Selection")
+                    .font(.headline)
+                Spacer()
+                Button("Cancel") {
+                    onCancel()
+                }
+            }
+            .padding()
+            .background(Color.blue.opacity(0.1))
+            
+            // Search bar
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.secondary)
+                TextField("Search", text: $searchText)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                if !searchText.isEmpty {
+                    Button(action: { searchText = "" }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(BorderlessButtonStyle())
+                }
+            }
+            .padding()
+            
+            // Selection info
+            HStack {
+                Text("\(localSelectedItems.count) of \(selectedItems.count) files selected")
+                    .font(.callout)
+                    .foregroundColor(.secondary)
+                
+                Spacer()
+                
+                // Selection buttons
+                Button("Select All") {
+                    localSelectedItems = selectedItems
+                }
+                .disabled(localSelectedItems.count == selectedItems.count)
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                
+                Button("Deselect All") {
+                    localSelectedItems = []
+                }
+                .disabled(localSelectedItems.isEmpty)
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 8)
+            
+            // File list
+            List {
+                ForEach(filteredItems.sorted(by: { $0.name < $1.name }), id: \.id) { item in
+                    FileSelectionRow(
+                        item: item,
+                        isSelected: localSelectedItems.contains(item),
+                        onToggle: {
+                            toggleSelection(for: item)
+                        }
+                    )
+                }
+            }
+            .listStyle(InsetListStyle())
+            
+            // Action buttons
+            HStack {
+                Button("Cancel") {
+                    onCancel()
+                }
+                .buttonStyle(.bordered)
+                
+                Spacer()
+                
+                // Process Selected button - disabled if no items selected
+                Button("Process \(localSelectedItems.count) Files with AI") {
+                    // Update the parent's selected items with our local selection
+                    selectedItems = localSelectedItems
+                    onContinue()
+                }
+                .disabled(localSelectedItems.isEmpty)
+                .buttonStyle(.borderedProminent)
+            }
+            .padding()
+        }
+        .frame(minWidth: 600, minHeight: 500)
+        .onAppear {
+            // Initialize local selection with the passed-in selection
+            localSelectedItems = selectedItems
+        }
+    }
+    
+    var filteredItems: [FileItem] {
+        if searchText.isEmpty {
+            return Array(selectedItems)
+        } else {
+            return selectedItems.filter { item in
+                item.name.lowercased().contains(searchText.lowercased())
+            }
+        }
+    }
+    
+    func toggleSelection(for item: FileItem) {
+        if localSelectedItems.contains(item) {
+            localSelectedItems.remove(item)
+        } else {
+            localSelectedItems.insert(item)
+        }
+    }
+}
+
+struct FileSelectionRow: View {
+    let item: FileItem
+    let isSelected: Bool
+    let onToggle: () -> Void
+    
+    var body: some View {
+        HStack {
+            // Checkbox
+            Image(systemName: isSelected ? "checkmark.square.fill" : "square")
+                .foregroundColor(.blue)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    onToggle()
+                }
+            
+            // File icon
+            Image(systemName: FileUtils.fileTypeIcon(for: item.path))
+                .foregroundColor(.gray)
+                .frame(width: 24)
+            
+            // File details
+            VStack(alignment: .leading) {
+                Text(item.name)
+                    .lineLimit(1)
+                
+                HStack {
+                    Text(item.formattedSize)
+                    Text("•")
+                    Text(item.formattedDate)
+                }
+                .font(.caption)
+                .foregroundColor(.secondary)
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onToggle()
+        }
+        .padding(.vertical, 4)
+    }
+}
+
 #Preview {
     ContentView()
+}
+
+// Preview for the SelectionReviewView
+#Preview("Selection Review") {
+    SelectionReviewView(
+        selectedItems: .constant(Set([
+            FileItem(name: "vacation_pic_1.jpg", path: URL(string: "file:///vacation_pic_1.jpg")!, isDirectory: false, size: 1024, modificationDate: Date(), icon: "photo"),
+            FileItem(name: "screenshot_2023.png", path: URL(string: "file:///screenshot_2023.png")!, isDirectory: false, size: 2048, modificationDate: Date(), icon: "photo"),
+            FileItem(name: "Recording at 2023-08-15.mov", path: URL(string: "file:///Recording at 2023-08-15.mov")!, isDirectory: false, size: 10485760, modificationDate: Date(), icon: "film"),
+            FileItem(name: "document.pdf", path: URL(string: "file:///document.pdf")!, isDirectory: false, size: 4096, modificationDate: Date(), icon: "doc")
+        ])),
+        onContinue: {},
+        onCancel: {}
+    )
 }
