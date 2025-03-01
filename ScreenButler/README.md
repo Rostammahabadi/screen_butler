@@ -102,6 +102,9 @@ For support, feature requests, or feedback:
 - Twitter: [@ScreenButlerApp](https://twitter.com/ScreenButlerApp)
 - GitHub: [Report issues](https://github.com/screenbutler/issues)
 
+If you find ScreenButler helpful, consider supporting the developer:
+- [Buy Me a Coffee](https://buymeacoffee.com/RostamMahabadi)
+
 ## License
 
 ScreenButler is proprietary software. All rights reserved.
