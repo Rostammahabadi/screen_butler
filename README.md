@@ -112,3 +112,10 @@ ScreenButler is proprietary software. All rights reserved.
 ---
 
 Made with ❤️ for people who take too many screenshots 
+![Screenshot 2025-02-28 at 8 25 57 PM](https://github.com/user-attachments/assets/82f95d91-69fb-46c2-b28d-e574eb6d2514)
+
+![Screenshot 2025-02-28 at 8 26 16 PM](https://github.com/user-attachments/assets/1fba7aae-2170-4bdc-8854-7c8857d15689)
+![Screenshot 2025-02-28 at 8 33 47 PM](https://github.com/user-attachments/assets/23f206bd-b104-4499-a693-06648d579095)
+![Screenshot 2025-02-28 at 8 33 32 PM](https://github.com/user-attachments/assets/cb70f66d-42a0-4b1a-aae9-365b3992e27a)
+
+
