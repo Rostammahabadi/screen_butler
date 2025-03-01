@@ -93,10 +93,15 @@ struct ContentView: View {
     @State private var isShowingSelectionReviewView = false
     @State private var renameSuggestions: [FileItem: String] = [:]
     @State private var isSmartSelecting = false
+    @State private var isShowingFolderPicker = false
     @EnvironmentObject var fileService: FileSystemService  // Use environment object instead of creating a new instance
     
     // Whether the view is displayed in a window (true) or directly in menu (false)
     var isInWindow: Bool = true
+    
+    // Store notification observers to properly remove them later
+    @State private var smartSelectObserver: Any? = nil
+    @State private var openDirectoryObserver: Any? = nil
     
     var body: some View {
         HStack(spacing: 0) {
@@ -201,7 +206,18 @@ struct ContentView: View {
         .onAppear {
             // Set up notification observer for directory navigation from menu bar
             #if os(macOS)
-            NotificationCenter.default.addObserver(
+            // Remove any existing observers first to prevent duplicates
+            if let existingObserver = openDirectoryObserver {
+                NotificationCenter.default.removeObserver(existingObserver)
+                openDirectoryObserver = nil
+            }
+            if let existingObserver = smartSelectObserver {
+                NotificationCenter.default.removeObserver(existingObserver)
+                smartSelectObserver = nil
+            }
+            
+            // Now add new observers
+            openDirectoryObserver = NotificationCenter.default.addObserver(
                 forName: Notification.Name("OpenDirectoryNotification"),
                 object: nil,
                 queue: .main
@@ -214,11 +230,17 @@ struct ContentView: View {
                     selectedItem = nil
                     selectedItems = []
                     isMultiSelectMode = false
+                    
+                    // Check if we should skip folder picker because one was already shown
+                    if let skipFolderPicker = userInfo["skipFolderPicker"] as? Bool, skipFolderPicker {
+                        // Don't show another folder picker dialog
+                        self.isShowingFolderPicker = false
+                    }
                 }
             }
             
             // Setup notification for triggering smart select
-            NotificationCenter.default.addObserver(
+            smartSelectObserver = NotificationCenter.default.addObserver(
                 forName: Notification.Name("TriggerSmartSelectNotification"),
                 object: nil,
                 queue: .main
@@ -229,6 +251,17 @@ struct ContentView: View {
                 
                 // Then trigger smart select
                 smartSelectAmbiguousFiles()
+            }
+            #endif
+        }
+        .onDisappear {
+            // Remove notification observers when the view disappears
+            #if os(macOS)
+            if let openDirectoryObserver = openDirectoryObserver {
+                NotificationCenter.default.removeObserver(openDirectoryObserver)
+            }
+            if let smartSelectObserver = smartSelectObserver {
+                NotificationCenter.default.removeObserver(smartSelectObserver)
             }
             #endif
         }

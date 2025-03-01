@@ -9,6 +9,8 @@ import SwiftUI
 
 @main
 struct ScreenButlerApp: App {
+    // Create the FileSystemService at the App level
+    @StateObject private var fileService = FileSystemService()
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.openWindow) private var openWindow
     
@@ -16,7 +18,11 @@ struct ScreenButlerApp: App {
         WindowGroup {
             ContentView(isInWindow: true)
                 .frame(minWidth: 800, minHeight: 600)
-                .environmentObject(appDelegate.fileService)
+                .environmentObject(fileService)
+                .onAppear {
+                    // Pass the fileService to the AppDelegate when the app appears
+                    appDelegate.setFileService(fileService)
+                }
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
@@ -35,7 +41,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var window: NSWindow?
     
     @Published var showFullApp: Bool = false
-    @StateObject var fileService = FileSystemService()
+    // Don't initialize fileService here, it will be provided by the ScreenButlerApp
+    var fileService: FileSystemService!
+    
+    // Function to receive the fileService from ScreenButlerApp
+    func setFileService(_ service: FileSystemService) {
+        fileService = service
+        // Update any UI that depends on fileService
+        updateUIWithFileService()
+    }
+    
+    private func updateUIWithFileService() {
+        // Only update UI components if they're already initialized
+        if popover != nil {
+            setupPopover()
+        }
+    }
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Set up the status bar item
@@ -63,10 +84,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         popover = NSPopover()
         popover.contentSize = NSSize(width: 300, height: 400)
         popover.behavior = .transient
-        popover.contentViewController = NSHostingController(
-            rootView: MenuBarView(appDelegate: self)
-                .environmentObject(fileService)
-        )
+        
+        if fileService != nil {
+            popover.contentViewController = NSHostingController(
+                rootView: MenuBarView(appDelegate: self)
+                    .environmentObject(fileService)
+            )
+        } else {
+            // Create a basic view if fileService is not yet available
+            popover.contentViewController = NSHostingController(
+                rootView: Text("Loading...")
+                    .frame(width: 300, height: 400)
+            )
+        }
     }
     
     @objc func togglePopover(_ sender: AnyObject?) {
@@ -90,7 +120,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         NSApp.setActivationPolicy(.regular)
         
         // Create the window if it doesn't exist
-        if window == nil {
+        if window == nil && fileService != nil {
             let contentView = ContentView(isInWindow: true)
                 .environmentObject(fileService)
             let hostingController = NSHostingController(rootView: contentView)
@@ -109,7 +139,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             
             // Add window delegate to handle window closing
             window?.delegate = self
-        } else {
+        } else if window != nil {
             window?.makeKeyAndOrderFront(nil)
         }
         
@@ -206,7 +236,7 @@ struct MenuBarView: View {
                                     NotificationCenter.default.post(
                                         name: Notification.Name("OpenDirectoryNotification"),
                                         object: nil,
-                                        userInfo: ["url": url]
+                                        userInfo: ["url": url, "skipFolderPicker": true]
                                     )
                                     appDelegate.openMainWindow()
                                 }) {
@@ -290,7 +320,7 @@ struct MenuBarView: View {
                 NotificationCenter.default.post(
                     name: Notification.Name("OpenDirectoryNotification"),
                     object: nil,
-                    userInfo: ["url": url]
+                    userInfo: ["url": url, "skipFolderPicker": true]
                 )
                 
                 // Open the main window
