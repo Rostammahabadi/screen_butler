@@ -1,4 +1,4 @@
-# ZenScreen TestFlight Submission Guide
+# ScreenButler TestFlight Submission Guide
 
 ## Fixing Validation Issues
 
@@ -8,7 +8,7 @@ This document provides solutions for the TestFlight validation errors you encoun
 
 The entitlement `com.apple.security.files.desktop.read-write` is not supported for App Store distribution. Use these alternatives:
 
-- **Modified in this fix**: Removed the unsupported entitlement from `ZenScreen.entitlements`
+- **Modified in this fix**: Removed the unsupported entitlement from `ScreenButler.entitlements`
 - **Sandbox-friendly alternatives**:
   - Use `com.apple.security.files.user-selected.read-write` (already included)
   - Use file pickers and security-scoped bookmarks for desktop access

@@ -6,17 +6,43 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		098F0A332D722F0500B84756 /* ScreenButlerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 098F0A322D722F0500B84756 /* ScreenButlerApp.swift */; };
+		098F0A352D722F0500B84756 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 098F0A342D722F0500B84756 /* ContentView.swift */; };
+		098F0A372D722F0500B84756 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 098F0A362D722F0500B84756 /* Assets.xcassets */; };
+		098F0A3A2D722F0500B84756 /* Preview Content in Resources */ = {isa = PBXBuildFile; fileRef = 098F0A392D722F0500B84756 /* Preview Content */; };
+		098F0A4A2D7230500B84756 /* FileRenameService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 098F0A422D722F6500B84756 /* FileRenameService.swift */; };
+		098F0A4B2D7230600B84756 /* OpenAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 098F0A432D722F7500B84756 /* OpenAIService.swift */; };
+		098F0A4C2D7230700B84756 /* APIKeyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 098F0A442D722F8500B84756 /* APIKeyView.swift */; };
+		098F0A4D2D7230800B84756 /* FileSystemService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 098F0A452D722F9500B84756 /* FileSystemService.swift */; };
+		098F0A4E2D7230900B84756 /* FileItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 098F0A462D722FA500B84756 /* FileItem.swift */; };
+		098F0A4F2D7230A00B84756 /* BatchRenameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 098F0A472D722FB500B84756 /* BatchRenameView.swift */; };
+		098F0A502D7230B00B84756 /* FileBrowserWithSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 098F0A482D722FC500B84756 /* FileBrowserWithSelectionView.swift */; };
+		098F0A542D7231800B84756 /* Core in Resources */ = {isa = PBXBuildFile; fileRef = 098F0A512D7231500B84756 /* Core */; };
+		098F0A552D7231900B84756 /* Features in Resources */ = {isa = PBXBuildFile; fileRef = 098F0A522D7231600B84756 /* Features */; };
+		098F0A562D7231A00B84756 /* UI in Resources */ = {isa = PBXBuildFile; fileRef = 098F0A532D7231700B84756 /* UI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		098F0A2F2D722F0500B84756 /* ScreenButler.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScreenButler.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		098F0A322D722F0500B84756 /* ScreenButlerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenButlerApp.swift; sourceTree = "<group>"; };
+		098F0A342D722F0500B84756 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		098F0A362D722F0500B84756 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		098F0A392D722F0500B84756 /* Preview Content */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Preview Content"; sourceTree = "<group>"; };
+		098F0A3B2D722F0500B84756 /* ScreenButler.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ScreenButler.entitlements; sourceTree = "<group>"; };
+		098F0A412D722F5500B84756 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		098F0A422D722F6500B84756 /* FileRenameService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileRenameService.swift; sourceTree = "<group>"; };
+		098F0A432D722F7500B84756 /* OpenAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIService.swift; sourceTree = "<group>"; };
+		098F0A442D722F8500B84756 /* APIKeyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyView.swift; sourceTree = "<group>"; };
+		098F0A452D722F9500B84756 /* FileSystemService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSystemService.swift; sourceTree = "<group>"; };
+		098F0A462D722FA500B84756 /* FileItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileItem.swift; sourceTree = "<group>"; };
+		098F0A472D722FB500B84756 /* BatchRenameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchRenameView.swift; sourceTree = "<group>"; };
+		098F0A482D722FC500B84756 /* FileBrowserWithSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileBrowserWithSelectionView.swift; sourceTree = "<group>"; };
+		098F0A492D722FD500B84756 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		098F0A512D7231500B84756 /* Core */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Core; sourceTree = "<group>"; };
+		098F0A522D7231600B84756 /* Features */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Features; sourceTree = "<group>"; };
+		098F0A532D7231700B84756 /* UI */ = {isa = PBXFileReference; lastKnownFileType = folder; path = UI; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		098F0A312D722F0500B84756 /* ZenScreen */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ZenScreen;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		098F0A2C2D722F0500B84756 /* Frameworks */ = {
@@ -32,7 +58,7 @@
 		098F0A262D722F0400B84756 = {
 			isa = PBXGroup;
 			children = (
-				098F0A312D722F0500B84756 /* ZenScreen */,
+				098F0A312D722F0500B84756 /* ScreenButler */,
 				098F0A302D722F0500B84756 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,6 +69,30 @@
 				098F0A2F2D722F0500B84756 /* ScreenButler.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		098F0A312D722F0500B84756 /* ScreenButler */ = {
+			isa = PBXGroup;
+			children = (
+				098F0A322D722F0500B84756 /* ScreenButlerApp.swift */,
+				098F0A342D722F0500B84756 /* ContentView.swift */,
+				098F0A422D722F6500B84756 /* FileRenameService.swift */,
+				098F0A432D722F7500B84756 /* OpenAIService.swift */,
+				098F0A442D722F8500B84756 /* APIKeyView.swift */,
+				098F0A452D722F9500B84756 /* FileSystemService.swift */,
+				098F0A462D722FA500B84756 /* FileItem.swift */,
+				098F0A472D722FB500B84756 /* BatchRenameView.swift */,
+				098F0A482D722FC500B84756 /* FileBrowserWithSelectionView.swift */,
+				098F0A512D7231500B84756 /* Core */,
+				098F0A522D7231600B84756 /* Features */,
+				098F0A532D7231700B84756 /* UI */,
+				098F0A362D722F0500B84756 /* Assets.xcassets */,
+				098F0A3B2D722F0500B84756 /* ScreenButler.entitlements */,
+				098F0A412D722F5500B84756 /* Info.plist */,
+				098F0A492D722FD500B84756 /* README.md */,
+				098F0A392D722F0500B84756 /* Preview Content */,
+			);
+			path = ScreenButler;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -59,9 +109,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				098F0A312D722F0500B84756 /* ZenScreen */,
 			);
 			name = ScreenButler;
 			packageProductDependencies = (
@@ -85,7 +132,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 098F0A2A2D722F0400B84756 /* Build configuration list for PBXProject "ZenScreen" */;
+			buildConfigurationList = 098F0A2A2D722F0400B84756 /* Build configuration list for PBXProject "ScreenButler" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -109,6 +156,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				098F0A372D722F0500B84756 /* Assets.xcassets in Resources */,
+				098F0A3A2D722F0500B84756 /* Preview Content in Resources */,
+				098F0A542D7231800B84756 /* Core in Resources */,
+				098F0A552D7231900B84756 /* Features in Resources */,
+				098F0A562D7231A00B84756 /* UI in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,6 +171,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				098F0A352D722F0500B84756 /* ContentView.swift in Sources */,
+				098F0A4A2D7230500B84756 /* FileRenameService.swift in Sources */,
+				098F0A4B2D7230600B84756 /* OpenAIService.swift in Sources */,
+				098F0A4C2D7230700B84756 /* APIKeyView.swift in Sources */,
+				098F0A4D2D7230800B84756 /* FileSystemService.swift in Sources */,
+				098F0A4E2D7230900B84756 /* FileItem.swift in Sources */,
+				098F0A4F2D7230A00B84756 /* BatchRenameView.swift in Sources */,
+				098F0A502D7230B00B84756 /* FileBrowserWithSelectionView.swift in Sources */,
+				098F0A332D722F0500B84756 /* ScreenButlerApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -248,16 +309,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = ZenScreen/ScreenButler.entitlements;
+				CODE_SIGN_ENTITLEMENTS = ScreenButler/ScreenButler.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"ZenScreen/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"ScreenButler/Preview Content\"";
 				DEVELOPMENT_TEAM = V785FYBXRX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = ZenScreen/Info.plist;
+				INFOPLIST_FILE = ScreenButler/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -265,7 +326,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rostam.ScreenButler;
-				PRODUCT_NAME = ScreenButler;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -276,16 +337,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = ZenScreen/ScreenButler.entitlements;
+				CODE_SIGN_ENTITLEMENTS = ScreenButler/ScreenButler.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"ZenScreen/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"ScreenButler/Preview Content\"";
 				DEVELOPMENT_TEAM = V785FYBXRX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = ZenScreen/Info.plist;
+				INFOPLIST_FILE = ScreenButler/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -293,7 +354,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rostam.ScreenButler;
-				PRODUCT_NAME = ScreenButler;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -302,7 +363,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		098F0A2A2D722F0400B84756 /* Build configuration list for PBXProject "ZenScreen" */ = {
+		098F0A2A2D722F0400B84756 /* Build configuration list for PBXProject "ScreenButler" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				098F0A3C2D722F0500B84756 /* Debug */,
